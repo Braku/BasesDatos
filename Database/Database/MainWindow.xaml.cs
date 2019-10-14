@@ -39,7 +39,7 @@ namespace Database
                 con.Open();
             cmd.Connection = con;
             cmd.CommandText = "select * from 5B";
-            OleDbDataAdapter da = new OleDbDataAdapter();
+            OleDbDataAdapter da = new OleDbDataAdapter(cmd);
             dt = new DataTable();
             da.Fill(dt);
             gvDatos.ItemsSource = dt.AsDataView();
@@ -66,54 +66,86 @@ namespace Database
 
         private void bnew_click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void bedit_click(object sender, RoutedEventArgs e)
-        {
             OleDbCommand cmd = new OleDbCommand();
             if (con.State != ConnectionState.Open)
                 con.Open();
             cmd.Connection = con;
-            if(txtid.Text != "")
+            if (txtid.Text != "")
             {
-                if(cbGen.Text != "Selecciona Genero")
+                if (txtid.IsEnabled == true)
                 {
-                    cmd.CommandText = "Insert into 5B(Id, Nombre, Genero, Telefono, Direccion)" + 
-                        "Values("+txtid.Text+", '"+txtname.Text+", '"+cbGen.Text+", "+txttel.Text+", '"+txtdir.Text+"')";
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Alumno agregadon con exito...");
-                    LimpiarTodo();
+                    if (cbGen.Text != "Selecciona Genero")
+                    {
+                        cmd.CommandText = "insert into 5B(Id, Nombre, Genero, Telefono, Direccion)" +
+                            "Values(" + txtid.Text + ", '" + txtname.Text + "', '" + cbGen.Text + "', " + txttel.Text + ", '" + txtdir.Text + "')";
+                        cmd.ExecuteNonQuery();
+                        MessageBox.Show("Alumno agregadon con exito...");
+                        LimpiarTodo();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Favor de seleccionar el genero...");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Favor de seleccionar el genero...");
+                    cmd.CommandText = "update 5B set Nombre ='" + txtname.Text + "',Genero='" + cbGen.Text + "',Telefono=" + txttel.Text + ",Direccion='" + txtdir.Text + "where Id=" + txtid.Text;
+                    cmd.ExecuteNonQuery();
+                    MostrarDatos();
+                    MessageBox.Show("Datos del alumno actualizados");
+                    LimpiarTodo();
                 }
             }
             else
             {
-                cmd.CommandText = "update 5B set Nombre ='" +
-                    txtname.Text + "',Genero='" + cbGen.Text + "',Telefono=" + txttel.Text + ",Direccion='" + txtdir.Text + "where Id=" + txtid.Text;
-                cmd.ExecuteNonQuery();
-                MostrarDatos();
-                MessageBox.Show("Datod frl alu,no  actualizados");
-                LimpiarTodo();
+                MessageBox.Show("Favor de poner el ID de un Alumno.......");
+            }
+        }
+
+        private void bedit_click(object sender, RoutedEventArgs e)
+        {
+            if (gvDatos.SelectedItems.Count > 0)
+            {
+                DataRowView row = (DataRowView)gvDatos.SelectedItems[0];
+                txtid.Text = row["Id"].ToString();
+                txtname.Text = row["Nombre"].ToString();
+                cbGen.Text = row["Genero"].ToString();
+                txttel.Text = row["Telefono"].ToString();
+                txtdir.Text = row["Direccion"].ToString();
+                txtid.IsEnabled = false;
+                bnew.Content = "Actualizar";
+            }
+            else
+            {
+                MessageBox.Show("Favor de seleccionar un alumno...");
             }
         }
 
         private void bdel_click(object sender, RoutedEventArgs e)
         {
-
+            if (gvDatos.SelectedItems.Count > 0)
+            {
+                DataRowView row = (DataRowView)gvDatos.SelectedItems[0];
+                OleDbCommand cmd = new OleDbCommand();
+                if (con.State != ConnectionState.Open)
+                    con.Open();
+                cmd.Connection = con;
+                cmd.CommandText = "Delete from Progra where Id=" + row["Id"].ToString();
+                cmd.ExecuteNonQuery();
+                MostrarDatos();
+                MessageBox.Show("Alumno eliminado correctamente...");
+                LimpiarTodo();
+            }
         }
 
         private void bcancel_click(object sender, RoutedEventArgs e)
         {
-
+            LimpiarTodo();
         }
 
         private void bsal_click(object sender, RoutedEventArgs e)
         {
-
+            Application.Current.Shutdown();
         }
     }
 }
